@@ -13,6 +13,22 @@ final class DetailedViewController: UIViewController {
     
     var model: Article?
     
+    private lazy var myScrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.backgroundColor = .white
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        
+        return scrollView
+    }()
+    
+    private lazy var scrollConteinerView: UIView = {
+        let conteinerView = UIView()
+        conteinerView.backgroundColor = .white
+        conteinerView.translatesAutoresizingMaskIntoConstraints = false
+        
+        return conteinerView
+    }()
+    
     private lazy var openlinkButton: UIButton = {
         let b = UIButton()
         b.setTitleColor(.systemBlue, for: .normal)
@@ -91,28 +107,77 @@ final class DetailedViewController: UIViewController {
 }
 
 // MARK: - Private
-private extension DetailedViewController {
+extension DetailedViewController: UIScrollViewDelegate {
     
     func setupUI() {
         view.backgroundColor = .white
         navigationController?.navigationBar.prefersLargeTitles = false
         navigationItem.title = "Описание"
-        setupAvatarImageView()
-        setupNewsDescriptionLabel()
+        setupMyScrollView()
+        setupConteinerScrollView()
         setupShareButton()
-        setupConteinerView()
+        setupAvatarImageView()
+        setupConteinernView()
+        setupNewsDescriptionLabel()
         setupTitleLabel()
         setupNewsData()
         setupLinkButton()
+        
     }
         
+    func setupMyScrollView() {
+        view.addSubview(myScrollView)
+        
+        NSLayoutConstraint.activate([
+            myScrollView.leftAnchor.constraint(equalTo: view.leftAnchor),
+            myScrollView.topAnchor.constraint(equalTo: view.topAnchor),
+            myScrollView.rightAnchor.constraint(equalTo: view.rightAnchor),
+            myScrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+    }
+    
+    func setupConteinerScrollView() {
+        myScrollView.addSubview(scrollConteinerView)
+    
+        NSLayoutConstraint.activate([
+            scrollConteinerView.leftAnchor.constraint(equalTo: myScrollView.leftAnchor),
+            scrollConteinerView.topAnchor.constraint(equalTo: myScrollView.topAnchor),
+            scrollConteinerView.rightAnchor.constraint(equalTo: myScrollView.rightAnchor),
+            scrollConteinerView.bottomAnchor.constraint(equalTo: myScrollView.bottomAnchor),
+            scrollConteinerView.centerXAnchor.constraint(equalTo: myScrollView.centerXAnchor),
+            scrollConteinerView.centerYAnchor.constraint(equalTo: myScrollView.centerYAnchor)
+        ])
+    }
+    
+    func setupAvatarImageView() {
+        scrollConteinerView.addSubview(avatarImageView)
+        
+        view.addConstraints([
+            avatarImageView.topAnchor.constraint(equalTo: shareDataButton.bottomAnchor, constant: 20),
+            avatarImageView.leftAnchor.constraint(equalTo: scrollConteinerView.leftAnchor, constant: 20),
+            avatarImageView.rightAnchor.constraint(equalTo: scrollConteinerView.rightAnchor, constant: -20),
+            avatarImageView.heightAnchor.constraint(equalToConstant: 275)
+        ])
+    }
+    
+    func setupConteinernView() {
+        avatarImageView.addSubview(conteinerView)
+        
+        NSLayoutConstraint.activate([
+            conteinerView.bottomAnchor.constraint(equalTo: avatarImageView.bottomAnchor, constant: -5),
+            conteinerView.leftAnchor.constraint(equalTo: avatarImageView.leftAnchor, constant: 5),
+            conteinerView.rightAnchor.constraint(equalTo: avatarImageView.rightAnchor, constant: -5),
+            conteinerView.heightAnchor.constraint(equalToConstant: 110),
+        ])
+    }
+    
     func setupNewsDescriptionLabel() {
-        view.addSubview(newsDescriptionLabel)
+        scrollConteinerView.addSubview(newsDescriptionLabel)
         
         view.addConstraints([
             newsDescriptionLabel.topAnchor.constraint(equalTo: avatarImageView.bottomAnchor, constant: 30),
-            newsDescriptionLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 25),
-            newsDescriptionLabel.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -25),
+            newsDescriptionLabel.leftAnchor.constraint(equalTo: scrollConteinerView.leftAnchor, constant: 25),
+            newsDescriptionLabel.rightAnchor.constraint(equalTo: scrollConteinerView.rightAnchor, constant: -25),
         ])
     }
     
@@ -126,46 +191,24 @@ private extension DetailedViewController {
         ])
     }
     
-    func setupConteinerView() {
-        avatarImageView.addSubview(conteinerView)
-        
-        NSLayoutConstraint.activate([
-            conteinerView.bottomAnchor.constraint(equalTo: avatarImageView.bottomAnchor, constant: -5),
-            conteinerView.leftAnchor.constraint(equalTo: avatarImageView.leftAnchor, constant: 5),
-            conteinerView.rightAnchor.constraint(equalTo: avatarImageView.rightAnchor, constant: -5),
-            conteinerView.heightAnchor.constraint(equalToConstant: 110),
-        ])
-    }
-    
-    func setupAvatarImageView() {
-        view.addSubview(avatarImageView)
-        
-        view.addConstraints([
-            avatarImageView.topAnchor.constraint(equalTo: view.topAnchor, constant: 130),
-            avatarImageView.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 20),
-            avatarImageView.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -20),
-            avatarImageView.heightAnchor.constraint(equalToConstant: 275)
-        ])
-    }
-    
     func setupShareButton() {
-        view.addSubview(shareDataButton)
+        scrollConteinerView.addSubview(shareDataButton)
         
         view.addConstraints([
-            shareDataButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 85),
-            shareDataButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -15),
+            shareDataButton.topAnchor.constraint(equalTo: scrollConteinerView.topAnchor, constant: 30),
+            shareDataButton.rightAnchor.constraint(equalTo: scrollConteinerView.rightAnchor, constant: -15),
             shareDataButton.heightAnchor.constraint(equalToConstant: 26),
             shareDataButton.widthAnchor.constraint(equalToConstant: 26)
         ])
     }
     
     func setupLinkButton() {
-        view.addSubview(openlinkButton)
+        scrollConteinerView.addSubview(openlinkButton)
         
         NSLayoutConstraint.activate([
             openlinkButton.topAnchor.constraint(equalTo: newsDescriptionLabel.bottomAnchor, constant: 30),
-            openlinkButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 70),
-            openlinkButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -70),
+            openlinkButton.leftAnchor.constraint(equalTo: scrollConteinerView.leftAnchor, constant: 70),
+            openlinkButton.rightAnchor.constraint(equalTo: scrollConteinerView.rightAnchor, constant: -70),
             openlinkButton.heightAnchor.constraint(equalToConstant: 50)
         ])
     }

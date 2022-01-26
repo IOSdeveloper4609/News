@@ -8,6 +8,7 @@
 import Foundation
 
 struct Sources: Decodable {
+  //  let totalResults: Int
     let sources: [SourceObject]
 }
 

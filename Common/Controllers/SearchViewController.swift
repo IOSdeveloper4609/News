@@ -13,7 +13,9 @@ final class SearchViewController: UIViewController {
     private var networkManager = NetworkManager()
     private var networkMonitor = NetworkMonitor.shared
     private var searchResultsArray = [Article]()
-    
+    private var isLoading = false
+    private let spinner = UIActivityIndicatorView()
+        
     private lazy var mainTableView: UITableView = {
         let tv = UITableView()
         tv.dataSource = self
@@ -83,7 +85,43 @@ private extension SearchViewController {
         present(alert, animated: true, completion: nil)
     }
     
+    func setupSpinnerFooter() -> UIView {
+        let footerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 100))
+        spinner.backgroundColor = .black
+        spinner.startAnimating()
+        spinner.center = footerView.center
+        footerView.addSubview(spinner)
+        return footerView
+    }
+    
+    func hideSpinnerFooter() -> UIView {
+        spinner.stopAnimating()
+        return spinner
+    }
+    
+    func getData() {
+        if isLoading {
+            return
+        }
+        
+        isLoading = true
+        
+        let searchValue = searchController.searchBar.text?.lowercased() ?? ""
+        
+        let perPage = 10
+        let page = searchResultsArray.count / perPage + 1
+        
+        networkManager.getObject(page: page, pageSize: perPage, value: searchValue) { [weak self] results in
+            self?.searchResultsArray.append(contentsOf: results)
+            DispatchQueue.main.async  {
+                self?.mainTableView.reloadData()
+                self?.mainTableView.tableFooterView = self?.hideSpinnerFooter()
+                self?.isLoading = false
+            }
+        }
+    }
 }
+
 
 // MARK: - UITableViewDataSource
 extension SearchViewController:  UITableViewDataSource  {
@@ -122,16 +160,9 @@ extension SearchViewController:  UITableViewDataSource  {
 extension SearchViewController: UISearchBarDelegate {
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        let searchValue = searchController.searchBar.text?.lowercased() ?? ""
-        
-        networkManager.getObject(value: searchValue) { results in
-            self.searchResultsArray = results
-            DispatchQueue.main.async  {
-                self.mainTableView.reloadData()
-            }
-        }
+        searchResultsArray.removeAll()
+        getData()
     }
-    
 }
 
 // MARK: - UITableViewDelegate
@@ -144,4 +175,21 @@ extension SearchViewController: UITableViewDelegate {
         }
     }
     
+}
+
+
+// MARK: - UIScrollViewDelegate
+extension SearchViewController: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard !searchResultsArray.isEmpty else {
+            return
+        }
+        
+        let position = scrollView.contentOffset.y
+        if position > self.mainTableView.contentSize.height - scrollView.frame.size.height {
+            mainTableView.tableFooterView = setupSpinnerFooter()
+            getData()
+            
+        }
+    }
 }

@@ -10,7 +10,9 @@ import Foundation
 final class NetworkManager: Service {
     
     func getSources(completion: @escaping ([SourceObject]) -> Void) {
-        let parameters = ["language": "en"]
+//        let parameters = ,
+//                          "pageSize": ,
+//                          ]
         
         let completion: (Sources?) -> Void = { data in
             guard let data = data else {
@@ -24,13 +26,16 @@ final class NetworkManager: Service {
         sendGetRequest(
             path: "/v2/top-headlines/sources",
             host: "newsapi.org",
-            parameters: parameters,
+            parameters: [:],
             completion: completion
         )
     }
     
-    func getNews(id: String, completion: @escaping ([NewsObject]) -> Void) {
-        let parameters = ["sources": id]
+    func getNews(page: Int, pageSize: Int, id: String, completion: @escaping ([NewsObject]) -> Void) {
+        let parameters = ["sources": id,
+                          "page": String(page),
+                          "pageSize" :String(pageSize)
+        ]
         
         let completion: (News?) -> Void = { data in
             guard let data = data else {
@@ -49,9 +54,11 @@ final class NetworkManager: Service {
         )
     }
     
-    func getObject(value: String, completion: @escaping ([Article]) -> Void) {
+    func getObject(page: Int, pageSize: Int, value: String, completion: @escaping ([Article]) -> Void) {
         let parameters = ["q": value,
-                          "language":"en"]
+                          "language":"en",
+                          "page": String(page),
+                          "pageSize" :String(pageSize)]
         
         let completion: (Search?) -> Void = { data in
             guard let data = data else {

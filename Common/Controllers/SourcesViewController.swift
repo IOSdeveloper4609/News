@@ -89,7 +89,6 @@ private extension SourcesViewController {
             DispatchQueue.main.async  {
                 DatabaseManager.shared.saveSources(objects: sources)
                 self?.sourcesArray = sources
-                
                 self?.mainTableView.reloadData()
                 self?.stopActivityIndicator()
             }
@@ -160,3 +159,5 @@ extension SourcesViewController: AddToFavoritesDelegate {
     }
     
 }
+
+

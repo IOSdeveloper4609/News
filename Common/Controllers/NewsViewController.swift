@@ -7,16 +7,19 @@
 
 import UIKit
 
-final class NewsViewController: UIViewController {
+final class NewsViewController: UIViewController, UITableViewDelegate {
     
     private var databaseManager = DatabaseManager.shared
     private var networkManager = NetworkManager()
     private var networkMonitor = NetworkMonitor.shared
     private var newsArray = [NewsObject]()
+    private var isLoading = false
+    private let spinner = UIActivityIndicatorView()
     
     private lazy var mainTableView: UITableView = {
         let tv = UITableView()
         tv.dataSource = self
+        tv.delegate = self
         tv.rowHeight = 300
         tv.separatorStyle = .singleLine
         tv.backgroundColor = .white
@@ -79,18 +82,30 @@ private extension NewsViewController {
     }
     
     func fetchNews() {
+        if isLoading {
+            return
+        }
+
+        isLoading = true
+        
+        
         guard let objects = databaseManager.safeRealm?.objects(SourceObject.self).filter("isFavourite == true") else {
             return
         }
         
         let ids = objects.map { ($0.id ?? "") }.joined(separator: ",")
+        
+                let perPage = 10
+                let page = newsArray.count / perPage + 1
        
-        networkManager.getNews(id: ids) { [weak self] result in
+        networkManager.getNews(page: page, pageSize: perPage, id: ids) { [weak self] result in
             DispatchQueue.main.async  {
                 DatabaseManager.shared.saveNews(objects: result)
-                self?.newsArray = result
+                self?.newsArray.append(contentsOf: result) 
                 self?.stopActivityIndicator()
+                self?.mainTableView.tableFooterView = self?.hideSpinnerFooter()
                 self?.mainTableView.reloadData()
+                self?.isLoading = false
             }
         }
     }
@@ -112,6 +127,20 @@ private extension NewsViewController {
     
     func startActivityIndicator() {
         activityIndicator.startAnimating()
+    }
+    
+    func setupSpinnerFooter() -> UIView {
+        let footerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: 100))
+        spinner.backgroundColor = .black
+        spinner.startAnimating()
+        spinner.center = footerView.center
+        footerView.addSubview(spinner)
+        return footerView
+    }
+    
+    func hideSpinnerFooter() -> UIView {
+        spinner.stopAnimating()
+        return spinner
     }
     
 }
@@ -141,3 +170,18 @@ extension NewsViewController: UITableViewDataSource {
     
 }
 
+
+// MARK: - UIScrollViewDelegate
+extension NewsViewController: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard !newsArray.isEmpty else {
+            return
+        }
+        
+        let position = scrollView.contentOffset.y
+        if position > self.mainTableView.contentSize.height - scrollView.frame.size.height {
+            mainTableView.tableFooterView = setupSpinnerFooter()
+            fetchNews()
+        }
+    }
+}

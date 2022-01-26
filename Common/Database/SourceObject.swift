@@ -16,6 +16,7 @@ class SourceObject: Object, Decodable {
     @objc dynamic var isFavourite: Bool = false
     @objc dynamic var category: String? = ""
     @objc dynamic var url: String? = ""
+    //@objc dynamic var totalResults: Int = 0
     
     override static func primaryKey() -> String? {
         return "id"
@@ -27,6 +28,7 @@ class SourceObject: Object, Decodable {
         case detailed = "description"
         case category
         case url
+        //case totalResults
     }
     
 }
